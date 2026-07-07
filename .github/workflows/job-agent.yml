@@ -6,7 +6,6 @@ on:
     # 06:00 UTC = 09:00 TR sabah, 15:00 UTC = 18:00 TR akşam
     - cron: "0 6 * * *"
     - cron: "0 15 * * *"
-  # Actions sekmesinden elle tetiklemek için (ilk testte kullan)
   workflow_dispatch:
     inputs:
       test_mode:
@@ -44,7 +43,7 @@ jobs:
           TEST_MODE: ${{ inputs.test_mode }}
         run: python main.py
 
-     - name: Görülen ilanları kaydet (seen.json commit)
+      - name: Görülen ilanları kaydet (seen.json commit)
         run: |
           git config user.name "job-agent-bot"
           git config user.email "actions@users.noreply.github.com"
