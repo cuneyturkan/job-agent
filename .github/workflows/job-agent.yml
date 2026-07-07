@@ -1,0 +1,56 @@
+name: Job Agent
+
+on:
+  schedule:
+    # UTC saatleri! Türkiye = UTC+3
+    # 06:00 UTC = 09:00 TR sabah, 15:00 UTC = 18:00 TR akşam
+    - cron: "0 6 * * *"
+    - cron: "0 15 * * *"
+  # Actions sekmesinden elle tetiklemek için (ilk testte kullan)
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "Test modu (sadece 1 örnek ilan gönderir)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: job-agent
+  cancel-in-progress: false
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu çek
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bağımlılıkları yükle
+        run: pip install -r requirements.txt
+
+      - name: Ajanı çalıştır
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEST_MODE: ${{ inputs.test_mode }}
+        run: python main.py
+
+      - name: Görülen ilanları kaydet (seen.json commit)
+        run: |
+          git config user.name "job-agent-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/seen.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: seen.json güncellendi [skip ci]"
+            git pull --rebase origin ${GITHUB_REF_NAME}
+            git push
+          fi

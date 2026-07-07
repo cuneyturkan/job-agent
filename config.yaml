@@ -1,0 +1,147 @@
+# =====================================================================
+# İş Ajanı Yapılandırması
+# Bu dosyayı düzenleyerek aramaları istediğin gibi değiştirebilirsin.
+# Değişiklikleri commit'lediğinde bir sonraki çalışmada devreye girer.
+# =====================================================================
+
+settings:
+  # LinkedIn'de son kaç saniyede yayınlanan ilanlar taransın
+  # 86400 = son 24 saat (ajan günde 2 kez çalıştığı için güvenli aralık)
+  linkedin_time_window: 86400
+  # Her sorgu için en fazla kaç sayfa çekilsin (sayfa başına ~25 ilan)
+  linkedin_max_pages: 2
+  # Bir çalıştırmada Telegram'a gönderilecek maksimum ilan sayısı (spam koruması)
+  max_jobs_per_run: 40
+
+categories:
+
+  # -------------------------------------------------------------
+  # KATEGORİ 1: Japonya'daki havacılık firmaları
+  # -------------------------------------------------------------
+  - name: "🇯🇵🇰🇷 Japonya & G. Kore - Havacılık"
+    linkedin_queries:
+      - { keywords: "aircraft maintenance", location: "Japan" }
+      - { keywords: "MRO", location: "Japan" }
+      - { keywords: "maintenance planning", location: "Japan" }
+      - { keywords: "airworthiness", location: "Japan" }
+      - { keywords: "aviation engineer", location: "Japan" }
+      - { keywords: "CAMO", location: "Japan" }
+      - { keywords: "aircraft maintenance", location: "South Korea" }
+      - { keywords: "MRO", location: "South Korea" }
+      - { keywords: "maintenance planning", location: "South Korea" }
+      - { keywords: "airworthiness", location: "South Korea" }
+      - { keywords: "aviation engineer", location: "South Korea" }
+    # Başlıkta bunlardan en az biri geçmeli (boş bırakılırsa hepsi kabul edilir)
+    include_keywords:
+      - aircraft
+      - aviation
+      - MRO
+      - maintenance
+      - airworthiness
+      - CAMO
+      - airline
+      - aerospace
+      - fleet
+      - technical services
+    exclude_keywords:
+      - flight attendant
+      - cabin crew
+      - pilot
+      - software
+      - nurse
+
+  # -------------------------------------------------------------
+  # KATEGORİ 2: Lessor technical representative / danışmanlık
+  # (Lokasyon bağımsız + remote ağırlıklı)
+  # -------------------------------------------------------------
+  - name: "✈️ Lessor Technical Rep / Danışmanlık"
+    linkedin_queries:
+      - { keywords: "aircraft technical representative", location: "" }
+      - { keywords: "lessor technical", location: "" }
+      - { keywords: "aircraft redelivery", location: "" }
+      - { keywords: "aircraft transition", location: "" }
+      - { keywords: "technical records aircraft", location: "" }
+      - { keywords: "aircraft asset management", location: "" }
+      - { keywords: "aircraft delivery consultant", location: "" }
+      - { keywords: "CAMO engineer remote", location: "" }
+    include_keywords:
+      - technical representative
+      - technical rep
+      - redelivery
+      - delivery
+      - transition
+      - records
+      - lessor
+      - leasing
+      - asset
+      - CAMO
+      - consultant
+      - airworthiness
+      - inspector
+      - surveyor
+    exclude_keywords:
+      - real estate
+      - pharma
+      - medical
+      - sales representative
+      - software
+
+  # -------------------------------------------------------------
+  # KATEGORİ 3: Japonya - havacılık dışı büyük firmalar,
+  # planlama / orta düzey yöneticilik
+  # -------------------------------------------------------------
+  - name: "🏢 Japonya & G. Kore - Planlama / Orta Düzey Yönetim"
+    linkedin_queries:
+      - { keywords: "production planning manager", location: "Japan" }
+      - { keywords: "operations planning manager", location: "Japan" }
+      - { keywords: "planning engineer", location: "Japan" }
+      - { keywords: "maintenance manager", location: "Japan" }
+      - { keywords: "assistant manager planning", location: "Japan" }
+      - { keywords: "production planning manager", location: "South Korea" }
+      - { keywords: "operations planning manager", location: "South Korea" }
+      - { keywords: "planning engineer", location: "South Korea" }
+      - { keywords: "maintenance manager", location: "South Korea" }
+    include_keywords:
+      - planning
+      - manager
+      - operations
+      - production
+      - scheduler
+      - PMO
+    exclude_keywords:
+      - financial planning
+      - wedding
+      - urban planning
+      - event planning
+      - tax
+      - audit
+      - recruiter
+
+# -------------------------------------------------------------
+# LinkedIn dışı kaynaklar (aç/kapa)
+# Bu siteler yapılarını değiştirirse ilgili kaynak sessizce
+# devre dışı kalır; log'da görürsün.
+# -------------------------------------------------------------
+extra_sources:
+  daijob:
+    enabled: true
+    # Daijob arama sorguları (İngilizce seviyesi filtreli işler döner)
+    queries:
+      - "aircraft"
+      - "aviation"
+      - "production planning"
+    category: "🇯🇵 Japonya - Havacılık / Planlama (Daijob)"
+  careercross:
+    enabled: true
+    queries:
+      - "aviation"
+      - "planning manager"
+    category: "🇯🇵 Japonya (CareerCross)"
+  jsfirm:
+    enabled: true
+    queries:
+      - "technical representative"
+      - "redelivery"
+      - "records"
+      - "japan"
+    category: "✈️ Havacılık (JSfirm)"
