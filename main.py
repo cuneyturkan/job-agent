@@ -175,6 +175,7 @@ def main() -> int:
         return run_test_mode(config, settings, seen)
 
     new_by_category: dict[str, list[dict]] = {}
+    run_ids: set[str] = set()  # aynı çalıştırma içinde mükerrer engelleme
     total_new = 0
     max_jobs = settings.get("max_jobs_per_run", 40)
 
@@ -197,11 +198,11 @@ def main() -> int:
             print(f"[linkedin] '{q.get('keywords')}' ({q.get('location') or 'her yer'}): {len(jobs)} ilan")
 
             for job in jobs:
-                if job["id"] in seen:
+                if job["id"] in seen or job["id"] in run_ids:
                     continue
                 if not passes_filter(job, include, exclude):
                     continue
-                seen[job["id"]] = now
+                run_ids.add(job["id"])
                 new_by_category.setdefault(name, []).append(job)
                 total_new += 1
             time.sleep(2)
@@ -214,13 +215,16 @@ def main() -> int:
         print(f"[{src_name}] toplam {len(jobs)} ilan")
         cat_name = src_cfg.get("category", src_name)
         for job in jobs:
-            if job["id"] in seen:
+            if job["id"] in seen or job["id"] in run_ids:
                 continue
-            seen[job["id"]] = now
+            run_ids.add(job["id"])
             new_by_category.setdefault(cat_name, []).append(job)
             total_new += 1
 
     # --- Gönderim ---
+    # ÖNEMLİ: Bir ilan yalnızca GÖNDERİLDİYSE seen.json'a yazılır.
+    # max_jobs_per_run sınırına takılan ilanlar görülmemiş sayılır ve
+    # bir sonraki çalıştırmada gönderilir.
     if total_new == 0:
         print("Yeni ilan yok, mesaj gönderilmiyor.")
     else:
@@ -230,13 +234,15 @@ def main() -> int:
                 break
             batch = jobs[: max_jobs - sent]
             send_category(cat_name, batch)
+            for job in batch:
+                seen[job["id"]] = now
             sent += len(batch)
             time.sleep(1)
         if total_new > sent:
             send_telegram(
-                f"ℹ️ Toplam {total_new} yeni ilan bulundu, spam olmaması için "
-                f"{sent} tanesi gönderildi. Kalanlar bir sonraki çalıştırmada "
-                f"tekrar bildirilmez; ayarı config.yaml → max_jobs_per_run ile artırabilirsin."
+                f"ℹ️ Toplam {total_new} yeni ilan bulundu, bu sefer {sent} tanesi "
+                f"gönderildi. Kalan {total_new - sent} ilan bir sonraki çalıştırmada "
+                f"gönderilecek. Tek seferde daha fazlası için: config.yaml → max_jobs_per_run."
             )
         print(f"Toplam {total_new} yeni ilan, {sent} gönderildi.")
 
