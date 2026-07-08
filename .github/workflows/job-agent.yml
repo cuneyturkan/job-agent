@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC saatleri! Türkiye = UTC+3
     # 06:00 UTC = 09:00 TR sabah, 15:00 UTC = 18:00 TR akşam
-    - cron: "3 8 * * *"
+    - cron: "3 6 * * *"
     - cron: "23 15 * * *"
   workflow_dispatch:
     inputs:
